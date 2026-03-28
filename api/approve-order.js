@@ -1,4 +1,3 @@
-export const config = { runtime: 'nodejs18.x' };
 
 const YOCO_SECRET_KEY = process.env.YOCO_SECRET_KEY;
 const WA_NUM = '27686143389';

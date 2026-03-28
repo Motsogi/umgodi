@@ -1,4 +1,3 @@
-export const config = { runtime: 'nodejs18.x' };
 
 export default async function handler(req, res) {
   const { order } = req.query || {};

@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Umgodi &#x2014; After hours, sorted.</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#E8A020"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Umgodi"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ember: #C8601A; --gold: #E8A020; --night: #0e0a04;
+    --cream: #faf8f5; --card: #ffffff; --border: #f0ede8;
+    --text: #1a0f02; --muted: #888; --light: #fdf6ee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+  /* SPLASH */
+  #splash {
+    position: fixed; inset: 0; z-index: 9999;
+    background: radial-gradient(ellipse at center, #160e02 0%, #08080f 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 28px;
+    transition: opacity 0.6s ease;
+  }
+  #splash.hide { opacity: 0; pointer-events: none; }
+  .splash-mug { animation: mugPop 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .splash-word { animation: wordIn 0.7s 0.8s cubic-bezier(0.16,1,0.3,1) both; text-align: center; }
+  .splash-word h1 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; color: #fff; letter-spacing: -1.5px; text-shadow: 0 4px 32px rgba(232,160,32,0.3); }
+  .splash-word p { font-size: 11px; letter-spacing: 3.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 8px; }
+  .glow-ring { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(232,160,32,0.08) 0%, transparent 70%); animation: glow 2.5s ease infinite; }
+
+  /* NAVBAR */
+  nav {
+    background: var(--night); border-bottom: 1px solid rgba(232,160,32,0.12);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .nav-inner {
+    max-width: 1280px; margin: 0 auto;
+    padding: 0 40px; height: 72px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; }
+  .nav-logo h1 { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -0.5px; line-height: 1; }
+  .nav-logo p { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 2px; }
+  .nav-search { flex: 1; max-width: 420px; position: relative; }
+  .nav-search input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 16px 10px 42px; color: #fff; font-size: 14px; outline: none; font-family: 'DM Sans', sans-serif; }
+  .nav-search input::placeholder { color: rgba(255,255,255,0.3); }
+  .nav-search .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.4; font-size: 14px; }
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+  .status-dot { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
+  .status-text { font-size: 13px; color: #4ade80; font-weight: 600; }
+  .cart-btn { background: linear-gradient(135deg, var(--gold), var(--ember)); border: none; border-radius: 12px; padding: 10px 20px; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; box-shadow: 0 4px 16px rgba(232,160,32,0.3); display: none; white-space: nowrap; }
+  .cart-btn.visible { display: flex; align-items: center; gap: 8px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0e0a04 0%, #1a0f02 50%, #241206 100%);
+    padding: 60px 40px; position: relative; overflow: hidden;
+  }
+  .hero-inner { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .hero-badge { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 14px; }
+  .hero h2 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 16px; max-width: 600px; }
+  .hero h2 span { color: var(--gold); }
+  .hero p { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 24px; max-width: 480px; }
+  .hero-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hero-tag { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 14px; font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 500; }
+  .hero-glow1 { position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(232,160,32,0.08) 0%, transparent 70%); border-radius: 50%; }
+  .hero-glow2 { position: absolute; bottom: -40px; left: 40%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(200,96,26,0.06) 0%, transparent 70%); border-radius: 50%; }
+  .hero-mug { opacity: 0.1; flex-shrink: 0; }
+
+  /* MAIN LAYOUT */
+  .main-layout { max-width: 1280px; margin: 0 auto; padding: 0 40px; display: flex; gap: 32px; align-items: flex-start; }
+
+  /* SIDEBAR */
+  .sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 88px; padding: 32px 0; }
+  .sidebar-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #aaa; margin-bottom: 12px; padding-left: 12px; }
+  .cat-btn { width: 100%; text-align: left; padding: 10px 14px; border-radius: 10px; border: none; background: transparent; color: #555; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 2px; font-family: 'DM Sans', sans-serif; border-left: 3px solid transparent; transition: all 0.15s; display: block; }
+  .cat-btn:hover { background: rgba(232,160,32,0.08); color: var(--ember); }
+  .cat-btn.active { background: rgba(232,160,32,0.12); color: var(--ember); font-weight: 700; border-left-color: var(--gold); }
+  .zone-card { margin-top: 24px; background: #fff; border-radius: 16px; padding: 16px; border: 1px solid var(--border); }
+  .zone-card h4 { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .zone-item { margin-bottom: 8px; }
+  .zone-item .zone-name { font-size: 13px; font-weight: 600; color: var(--ember); }
+  .zone-item .zone-areas { font-size: 11px; color: #888; }
+  .zone-note { font-size: 11px; color: #bbb; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+
+  /* PRODUCT AREA */
+  .product-area { flex: 1; padding: 32px 0 100px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 800; color: var(--text); }
+  .section-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .store-badge { font-size: 11px; color: #ccc; }
+
+  /* PRODUCT GRID */
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .product-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 20px;
+    padding: 20px; position: relative; transition: all 0.25s ease;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(200,96,26,0.12); border-color: rgba(232,160,32,0.3); }
+  .product-card.in-cart { border-color: var(--gold); }
+  .hot-badge { position: absolute; top: 12px; right: 12px; background: linear-gradient(135deg, var(--gold), var(--ember)); border-radius: 6px; padding: 2px 8px; font-size: 9px; color: #fff; font-weight: 700; }
+  .product-emoji { font-size: 42px; margin-bottom: 12px; display: block; }
+  .product-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; line-height: 1.35; color: var(--text); }
+  .product-size { font-size: 11px; color: #bbb; margin-bottom: 10px; }
+  .product-price { font-size: 20px; font-weight: 800; color: var(--ember); margin-bottom: 12px; }
+  .add-btn { width: 100%; padding: 10px 0; background: linear-gradient(135deg, var(--gold), var(--ember)); border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; box-shadow: 0 3px 10px rgba(232,160,32,0.25); transition: opacity 0.15s; }
+  .add-btn:hover { opacity: 0.88; }
+  .qty-ctrl { display: flex; align-items: center; justify-content: space-between; background: var(--light); border-radius: 10px; padding: 4px 12px; border: 1px solid rgba(232,160,32,0.2); }
+  .qty-btn { background: none; border: none; color: var(--gold); font-size: 24px; font-weight: 700; cursor: pointer; line-height: 1; padding: 0 4px; }
+  .qty-num { font-size: 16px; font-weight: 700; color: var(--text); }
+  .empty-state { text-align: center; padding: 60px 20px; color: #bbb; }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; display: block; }
+
+  /* CART PANEL */
+  #cart-screen, #tracking-screen { display: none; }
+  #cart-screen.active, #tracking-screen.active { display: block; }
+  .screen-wrap { max-width: 900px; margin: 0 auto; padding: 40px 40px 100px; }
+  .back-btn { background: none; border: none; color: #888; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-bottom: 24px; display: flex; align-items: center; gap: 6px; }
+  .back-btn:hover { color: var(--ember); }
+  .screen-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: var(--text); margin-bottom: 28px; }
+  .cart-grid { display: grid; grid-template-columns: 1fr 360px; gap: 28px; }
+  .white-card { background: #fff; border-radius: 20px; padding: 24px; border: 1px solid var(--border); margin-bottom: 16px; }
+  .card-label { font-size: 11px; font-weight: 700; color: #aaa; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .cart-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f5f2ee; }
+  .cart-item-emoji { font-size: 30px; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .cart-item-size { font-size: 12px; color: #bbb; margin-top: 2px; }
+  .cart-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .cart-item-price { font-size: 16px; font-weight: 800; color: var(--ember); }
+  .mini-qty { display: flex; gap: 6px; align-items: center; }
+  .mini-btn { background: var(--light); border: 1px solid #f0e8d8; color: var(--gold); width: 28px; height: 28px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .zone-option { padding: 14px; border-radius: 12px; cursor: pointer; margin-bottom: 10px; border: 1.5px solid var(--border); background: #faf8f5; transition: all 0.15s; }
+  .zone-option:hover { border-color: rgba(232,160,32,0.4); }
+  .zone-option.selected { background: var(--light); border-color: var(--gold); }
+  .zone-option-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .zone-option-areas { font-size: 12px; color: #888; margin-top: 2px; }
+  .check-mark { color: var(--gold); font-weight: 700; margin-left: auto; }
+  .addr-input { width: 100%; background: #faf8f5; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 14px; outline: none; font-family: 'DM Sans', sans-serif; color: var(--text); margin-top: 8px; }
+  .pay-option { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; cursor: pointer; margin-bottom: 10px; border: 1.5px solid var(--border); background: #faf8f5; transition: all 0.15s; }
+  .pay-option.selected { background: var(--light); border-color: var(--gold); }
+  .pay-icon { font-size: 22px; }
+  .pay-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #888; }
+  .summary-total { display: flex; justify-content: space-between; padding: 14px 0 0; font-size: 20px; font-weight: 800; border-top: 1px solid var(--border); margin-top: 8px; color: var(--text); }
+  .summary-total span:last-child { color: var(--ember); }
+  .security-note { background: #f0f9f0; border: 1px solid #c6e8c6; border-radius: 10px; padding: 10px 14px; margin-top: 14px; font-size: 12px; color: #4a8a4a; }
+  .place-btn { width: 100%; padding: 16px 0; background: linear-gradient(135deg, var(--gold), var(--ember)); border: none; border-radius: 14px; color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 14px; font-family: 'DM Sans', sans-serif; box-shadow: 0 6px 24px rgba(232,160,32,0.3); }
+  .place-btn:hover { opacity: 0.9; }
+
+  /* TRACKING */
+  .tab-row { display: flex; gap: 10px; margin-bottom: 24px; }
+  .tab-btn { flex: 1; padding: 12px 0; border-radius: 12px; border: 1px solid var(--border); background: #fff; color: #888; font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .tab-btn.active { background: linear-gradient(135deg, var(--gold), var(--ember)); border-color: transparent; color: #fff; box-shadow: 0 4px 16px rgba(232,160,32,0.25); }
+  .tracking-card { background: #fff; border-radius: 24px; padding: 32px; border: 1px solid var(--border); }
+  .track-hero { text-align: center; margin-bottom: 28px; }
+  .track-icon { font-size: 64px; display: block; margin-bottom: 14px; }
+  .track-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--text); }
+  .track-sub { font-size: 14px; color: #aaa; margin-top: 6px; }
+  .track-step { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); background: #faf8f5; }
+  .track-step.done { background: #f0faf0; border-color: #c6e8c6; }
+  .track-step.active { background: var(--light); border-color: #f0d8b0; }
+  .step-dot { width: 10px; height: 10px; border-radius: 50%; background: #e0dbd4; flex-shrink: 0; }
+  .step-dot.done { background: #4ade80; }
+  .step-dot.active { background: var(--gold); box-shadow: 0 0 8px rgba(232,160,32,0.5); }
+  .step-emoji { font-size: 18px; }
+  .step-text { font-size: 14px; color: #bbb; font-weight: 400; }
+  .step-text.done, .step-text.active { color: var(--text); font-weight: 600; }
+  .confirm-btn { width: 100%; padding: 15px 0; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 14px; color: #fff; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 16px; font-family: 'DM Sans', sans-serif; }
+  .report-btn { width: 100%; padding: 14px 0; background: transparent; border: 1.5px solid #ef4444; border-radius: 14px; color: #ef4444; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; font-family: 'DM Sans', sans-serif; }
+  .demo-ctrl { margin-top: 20px; padding: 16px; background: #faf8f5; border: 1px solid var(--border); border-radius: 14px; }
+  .demo-label { font-size: 11px; color: #ccc; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .demo-btn { width: 100%; padding: 13px 0; border: none; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .earnings-grid { display: flex; gap: 12px; }
+  .earn-box { flex: 1; background: #fff; border-radius: 12px; padding: 14px 10px; text-align: center; border: 1px solid var(--border); }
+  .earn-val { font-size: 22px; font-weight: 800; color: var(--ember); }
+  .earn-lbl { font-size: 11px; color: #aaa; margin-top: 4px; }
+  .photo-box { border: 2px dashed #e0dbd4; border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+  .photo-box:hover { border-color: var(--gold); }
+  .photo-box.done { background: #f0faf0; border-color: #86efac; }
+  .photo-box.locked { opacity: 0.5; cursor: default; }
+  .alert-green { background: #f0faf0; border: 1px solid #c6e8c6; border-radius: 12px; padding: 14px; text-align: center; margin-top: 12px; }
+  .alert-green p { font-size: 14px; color: #22c55e; font-weight: 700; }
+  .alert-red { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 14px; margin-top: 12px; }
+  .alert-red p { font-size: 13px; color: #ef4444; font-weight: 700; }
+
+  /* MOBILE */
+  .mobile-search { display: none; padding: 12px 16px; background: #fff; border-bottom: 1px solid var(--border); }
+  .mobile-cats { display: none; gap: 8px; overflow-x: auto; padding: 12px 16px; background: #fff; border-bottom: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
+  .mobile-cat-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid #e8e3dc; background: #fff; color: #666; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+  .mobile-cat-btn.active { background: rgba(232,160,32,0.1); border-color: var(--gold); color: var(--ember); }
+  .float-cart { position: fixed; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(135deg, var(--gold), var(--ember)); border-radius: 16px; padding: 14px 20px; display: none; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 8px 32px rgba(232,160,32,0.35); z-index: 100; }
+  .float-cart.visible { display: flex; }
+  .float-cart-left h4 { font-size: 15px; font-weight: 700; color: #fff; }
+  .float-cart-left p { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .float-cart-right { font-size: 16px; font-weight: 800; color: #fff; }
+
+  /* ANIMATIONS */
+  @keyframes mugPop { 0%{opacity:0;transform:scale(0.3) translateY(30px)} 65%{opacity:1;transform:scale(1.08) translateY(-4px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
+  @keyframes wordIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes glow { 0%,100%{opacity:0.15} 50%{opacity:0.3} }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  @media (max-width: 768px) {
+    .nav-inner { padding: 0 16px; height: 60px; }
+    .nav-logo h1 { font-size: 20px; }
+    .nav-logo p { display: none; }
+    .nav-search { display: none; }
+    .status-text { font-size: 11px; }
+    .cart-btn { padding: 8px 14px; font-size: 13px; }
+    .hero { padding: 28px 20px; }
+    .hero h2 { font-size: 26px; }
+    .hero p { font-size: 13px; }
+    .hero-mug { display: none; }
+    .mobile-search { display: block; }
+    .mobile-cats { display: flex; }
+    .main-layout { padding: 0; flex-direction: column; }
+    .sidebar { display: none; }
+    .product-area { padding: 0 0 100px; }
+    .section-header { padding: 14px 16px 8px; }
+    .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+    .product-card { border-radius: 16px; padding: 14px; }
+    .product-emoji { font-size: 32px; margin-bottom: 10px; }
+    .screen-wrap { padding: 20px 16px 100px; }
+    .cart-grid { grid-template-columns: 1fr; }
+    .screen-title { font-size: 24px; }
+    .tracking-card { padding: 20px; }
+    .track-title { font-size: 22px; }
+  }
+
+  /* AGE GATE */
+  #age-gate {
+    position: fixed; inset: 0; z-index: 99999;
+    background: radial-gradient(ellipse at center, #160e02 0%, #08080f 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.4s ease;
+  }
+  #age-gate.hide { display: none; }
+  .age-box {
+    background: #1a1008;
+    border: 1px solid rgba(232,160,32,0.2);
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+  .age-mug { font-size: 56px; margin-bottom: 16px; }
+  .age-title { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+  .age-sub { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 8px; line-height: 1.5; }
+  .age-legal { font-size: 11px; color: rgba(255,255,255,0.25); margin-bottom: 32px; line-height: 1.6; }
+  .age-buttons { display: flex; gap: 12px; justify-content: center; }
+  .age-yes { flex: 1; padding: 16px; background: linear-gradient(135deg, #E8A020, #C8601A); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.2s; }
+  .age-yes:hover { opacity: 0.9; }
+  .age-no { flex: 1; padding: 16px; background: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .age-no:hover { background: rgba(255,255,255,0.05); }
+  .age-blocked { text-align: center; padding: 20px; }
+  .age-blocked h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: #fff; margin-bottom: 12px; }
+  .age-blocked p { color: rgba(255,255,255,0.4); font-size: 14px; line-height: 1.6; }
+  .age-divider { width: 60px; height: 2px; background: linear-gradient(90deg, #E8A020, #C8601A); margin: 20px auto; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="glow-ring"></div>
+  <div class="splash-mug">
+    <svg width="110" height="121" viewBox="0 0 48 54" fill="none">
+      <ellipse cx="22" cy="8" rx="14" ry="6" fill="white" opacity="0.92"/>
+      <ellipse cx="14" cy="7" rx="5" ry="4" fill="white" opacity="0.7"/>
+      <ellipse cx="30" cy="7" rx="4" ry="3.5" fill="white" opacity="0.7"/>
+      <rect x="8" y="12" width="28" height="34" rx="5" fill="url(#mg)"/>
+      <rect x="12" y="16" width="6" height="20" rx="3" fill="white" opacity="0.15"/>
+      <path d="M36 20 Q46 20 46 30 Q46 40 36 40" stroke="url(#hg)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <defs>
+        <linearGradient id="mg" x1="8" y1="12" x2="36" y2="46" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#E8C060"/><stop offset="50%" stop-color="#E8A020"/><stop offset="100%" stop-color="#C8601A"/>
+        </linearGradient>
+        <linearGradient id="hg" x1="36" y1="20" x2="46" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#E8A020"/><stop offset="100%" stop-color="#C8601A"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <div class="splash-word">
+    <h1>umgodi</h1>
+    <p>After hours, sorted.</p>
+  </div>
+</div>
+
+
+<!-- AGE GATE -->
+<div id="age-gate">
+  <div class="age-box" id="age-box">
+    <div class="age-mug">&#127866;</div>
+    <div class="age-title">Welcome to Umgodi</div>
+    <div class="age-divider"></div>
+    <div class="age-sub">South Africa&apos;s after hours alcohol delivery service.</div>
+    <div class="age-legal">&#128274; By entering this site you confirm that you are 18 years of age or older and agree to our Terms &amp; Conditions. The sale of alcohol to persons under the age of 18 is prohibited by law.</div>
+    <div class="age-buttons">
+      <button class="age-yes" onclick="ageYes()">&#10003; &nbsp;Yes, I am 18+</button>
+      <button class="age-no" onclick="ageNo()">&#10005; &nbsp;No, I am not</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="home-screen">
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" onclick="showHome()">
+        <svg width="36" height="40" viewBox="0 0 48 54" fill="none">
+          <ellipse cx="22" cy="8" rx="14" ry="6" fill="white" opacity="0.92"/>
+          <rect x="8" y="12" width="28" height="34" rx="5" fill="url(#mg2)"/>
+          <path d="M36 20 Q46 20 46 30 Q46 40 36 40" stroke="#E8A020" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <defs>
+            <linearGradient id="mg2" x1="8" y1="12" x2="36" y2="46" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#E8C060"/><stop offset="100%" stop-color="#C8601A"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div><h1>umgodi</h1><p>After hours, sorted.</p></div>
+      </a>
+      <div class="nav-search">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="nav-search-input" placeholder="Search Castle, Savanna, Jack Daniel's..." oninput="filterProducts()"/>
+      </div>
+      <div class="nav-right">
+        <div class="status-dot">
+          <div class="dot"></div>
+          <span class="status-text">Open &middot; 12PM&ndash;2AM</span>
+        </div>
+        <button class="cart-btn" id="nav-cart-btn" onclick="showCart()">&#128722; <span id="nav-cart-label">0 items</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE SEARCH -->
+  <div class="mobile-search">
+    <div style="position:relative">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4">&#128269;</span>
+      <input type="text" id="mob-search-input" style="width:100%;background:#f5f2ee;border:none;border-radius:10px;padding:10px 16px 10px 36px;font-size:14px;outline:none;font-family:'DM Sans',sans-serif;color:#333" placeholder="Search products..." oninput="filterProducts()"/>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-glow1"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">&#127769; Nelspruit&apos;s #1 After Hours Delivery</div>
+        <h2>Your late night spot,<br><span>delivered.</span></h2>
+        <p>200+ products &middot; Beer, Spirits, Wine, Snacks &amp; more &middot; Photo-verified delivery &middot; ~30 mins</p>
+        <div class="hero-tags">
+          <span class="hero-tag">&#127866; Beer &amp; Cider</span>
+          <span class="hero-tag">&#129347; Spirits</span>
+          <span class="hero-tag">&#127863; Wine</span>
+          <span class="hero-tag">&#129354; Ice &amp; Snacks</span>
+          <span class="hero-tag">&#128666; Condoms &amp; More</span>
+        </div>
+      </div>
+      <div class="hero-mug">
+        <svg width="180" height="200" viewBox="0 0 48 54" fill="none">
+          <ellipse cx="22" cy="8" rx="14" ry="6" fill="white" opacity="0.92"/>
+          <rect x="8" y="12" width="28" height="34" rx="5" fill="url(#mg3)"/>
+          <path d="M36 20 Q46 20 46 30 Q46 40 36 40" stroke="#E8A020" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <defs>
+            <linearGradient id="mg3" x1="8" y1="12" x2="36" y2="46" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#E8C060"/><stop offset="100%" stop-color="#C8601A"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORE SELECTOR SCREEN -->
+  <div id="store-screen">
+    <div style="max-width:900px;margin:0 auto;padding:32px 20px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#E8A020;font-weight:700;margin-bottom:8px">&#127978; Available Now</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#1a0f02">Choose your store</h2>
+        <p style="color:#888;margin-top:6px;font-size:14px">Select a store near you to see their products &amp; order</p>
+      </div>
+      <div id="store-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;max-width:700px;margin:0 auto"></div>
+    </div>
+  </div>
+
+  <!-- MOBILE CATS -->
+  <div class="mobile-cats" id="mobile-cats" style="display:none"></div>
+
+  <!-- MAIN -->
+  <div class="main-layout" id="main-layout" style="display:none">
+    <div class="sidebar">
+      <div class="sidebar-label">Categories</div>
+      <div id="sidebar-cats"></div>
+      <div class="zone-card">
+        <h4>&#128665; Delivery Zones</h4>
+        <div class="zone-item"><div class="zone-name">Zone 1 &mdash; R50</div><div class="zone-areas">CBD, Sonheuwel, Berghof</div></div>
+        <div class="zone-item"><div class="zone-name">Zone 2 &mdash; R65</div><div class="zone-areas">West Acres, Kamagugu, Valencia, Mataffin</div></div>
+        <div class="zone-note">&#128274; Photo-verified delivery</div>
+      </div>
+    </div>
+    <div class="product-area">
+      <div class="section-header">
+        <div>
+          <div class="section-title" id="section-title">&#128293; Most Popular</div>
+          <div class="section-sub" id="section-sub">Loading...</div>
+        </div>
+        <div class="store-badge" id="active-store-badge">&#127978; KMG Lifestyle &middot; Kamagugu</div>
+      </div>
+      <div class="product-grid" id="product-grid"></div>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <span class="empty-icon">&#128269;</span>
+        <div style="font-size:16px;font-weight:600;color:#888">No results found</div>
+        <div style="font-size:13px;margin-top:6px">Try another product name</div>
+      </div>
+    </div>
+  </div>
+  </div><!-- end main-layout -->
+
+  <!-- FLOAT CART -->
+  <div class="float-cart" id="float-cart" onclick="showCart()">
+    <div class="float-cart-left"><h4 id="float-label">View Order</h4><p id="float-sub">+ delivery</p></div>
+    <div class="float-cart-right">Checkout &#8594;</div>
+  </div>
+</div>
+
+<!-- CART SCREEN -->
+<div id="cart-screen">
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" onclick="showHome()">
+        <svg width="28" height="31" viewBox="0 0 48 54" fill="none"><ellipse cx="22" cy="8" rx="14" ry="6" fill="white" opacity="0.92"/><rect x="8" y="12" width="28" height="34" rx="5" fill="url(#mg4)"/><path d="M36 20 Q46 20 46 30 Q46 40 36 40" stroke="#E8A020" stroke-width="5" stroke-linecap="round" fill="none"/><defs><linearGradient id="mg4" x1="8" y1="12" x2="36" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#E8C060"/><stop offset="100%" stop-color="#C8601A"/></linearGradient></defs></svg>
+        <div><h1>umgodi</h1></div>
+      </a>
+      <div class="nav-right">
+        <div class="status-dot"><div class="dot"></div><span class="status-text">Open &middot; 12PM&ndash;2AM</span></div>
+      </div>
+    </div>
+  </nav>
+  <div class="screen-wrap">
+    <button class="back-btn" onclick="showHome()">&#8592; Back to menu</button>
+    <div class="screen-title">Your Order &#128722;</div>
+    <div class="cart-grid">
+      <div>
+        <div class="white-card">
+          <div class="card-label">Order Items</div>
+          <div id="cart-items-list"></div>
+        </div>
+      </div>
+      <div>
+        <div class="white-card">
+          <div class="card-label">Delivery Zone</div>
+          <div id="zone-options"></div>
+          <input class="addr-input" type="text" placeholder="&#128205; Enter delivery address..." id="addr-input"/>
+        </div>
+        <div class="white-card">
+          <div class="card-label">Payment</div>
+          <div class="pay-option selected" id="pay-snap" onclick="selectPay('snap')">
+            <span class="pay-icon">&#128241;</span><span class="pay-label">SnapScan</span><span class="check-mark" id="snap-check">&#10003;</span>
+          </div>
+          <div class="pay-option" id="pay-pf" onclick="selectPay('pf')">
+            <span class="pay-icon">&#128179;</span><span class="pay-label">Yoco &mdash; Card / EFT</span><span class="check-mark" id="pf-check" style="display:none">&#10003;</span>
+          </div>
+        </div>
+        <div class="white-card">
+          <div class="card-label">Order Summary</div>
+          <div class="summary-row"><span>Subtotal</span><span id="summary-sub">R0</span></div>
+          <div class="summary-row"><span>Delivery fee</span><span id="summary-del">R50</span></div>
+          <div class="summary-total"><span>Total</span><span id="summary-total">R0</span></div>
+          <div class="security-note">&#128274; Photo-verified delivery &mdash; photos auto-deleted on confirmation</div>
+          <button class="place-btn" onclick="placeOrder()">Request Order &#128640;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRACKING SCREEN -->
+<div id="tracking-screen">
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" onclick="showHome()">
+        <svg width="28" height="31" viewBox="0 0 48 54" fill="none"><ellipse cx="22" cy="8" rx="14" ry="6" fill="white" opacity="0.92"/><rect x="8" y="12" width="28" height="34" rx="5" fill="url(#mg5)"/><path d="M36 20 Q46 20 46 30 Q46 40 36 40" stroke="#E8A020" stroke-width="5" stroke-linecap="round" fill="none"/><defs><linearGradient id="mg5" x1="8" y1="12" x2="36" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#E8C060"/><stop offset="100%" stop-color="#C8601A"/></linearGradient></defs></svg>
+        <div><h1>umgodi</h1></div>
+      </a>
+      <div class="nav-right"><div class="status-dot"><div class="dot"></div><span class="status-text">Open &middot; 12PM&ndash;2AM</span></div></div>
+    </div>
+  </nav>
+  <div class="screen-wrap" style="max-width:720px">
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-cust" onclick="setTab('customer')">&#128100; Customer View</button>
+      <button class="tab-btn" id="tab-driv" onclick="setTab('driver')">&#128757; Driver View</button>
+    </div>
+    <div id="customer-tab" class="tracking-card">
+      <div class="track-hero">
+        <span class="track-icon" id="track-icon">&#128230;</span>
+        <div class="track-title" id="track-title">Order Confirmed!</div>
+        <div class="track-sub">Est. ~30 mins &middot; KMG Lifestyle, Kamagugu</div>
+      <div style="background:#fdf6ee;border-radius:12px;padding:12px 16px;margin-top:12px;display:flex;align-items:center;gap:12px;border:1px solid #f0d8b0">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,#E8A020,#C8601A);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#128663;</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Mphonyana Motsogi</div>
+          <div style="font-size:11px;color:#888">Driver #001 &middot; Kia Sportage &middot; &#128994; On the way</div>
+        </div>
+      </div>
+      </div>
+      <div id="track-steps"></div>
+      <div id="track-actions"></div>
+    </div>
+    <div id="driver-tab" class="tracking-card" style="display:none">
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--text);margin-bottom:4px">Driver Dashboard &#128757;</div>
+      <div style="font-size:12px;color:#bbb;margin-bottom:16px">Standford Elizabeth Group t/a Umgodi</div>
+      <div style="background:linear-gradient(135deg,#1a0f02,#2a1a08);border-radius:16px;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#E8A020,#C8601A);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">&#128663;</div>
+        <div>
+          <div style="font-weight:800;font-size:16px;color:#fff">Mphonyana Motsogi</div>
+          <div style="font-size:12px;color:#E8A020;font-weight:600;margin-top:2px">Driver #001 &mdash; Kia Sportage</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px">Zone 1 &amp; Zone 2 &middot; &#128994; Active</div>
+        </div>
+      </div>
+      <div class="white-card" style="background:#fdf6ee;border-color:#f0d8b0">
+        <div style="font-size:14px;font-weight:700;color:var(--ember);margin-bottom:14px">&#128230; Active Order #UM2847</div>
+        <div style="font-size:14px;color:#666;margin-bottom:8px"><strong style="color:#888">&#127978; Pickup:</strong> KMG Lifestyle, 49 Flamingo Street, Kamagugu</div>
+        <div style="font-size:14px;color:#666;margin-bottom:8px"><strong style="color:#888">&#128205; Deliver to:</strong> 14 Sonheuwel Ave, Nelspruit</div>
+        <div style="font-size:14px;color:#666;margin-bottom:16px"><strong style="color:#888">&#128506; Zone:</strong> Zone 1 &middot; ~3.2km &middot; Earn R35</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">&#128247; Required Photos</div>
+        <div class="photo-box" id="pickup-photo" onclick="takePickupPhoto()">
+          <div style="font-size:28px;margin-bottom:6px">&#128247;</div>
+          <div style="font-size:14px;color:#888;font-weight:600">Tap &mdash; Pickup Photo</div>
+          <div style="font-size:12px;color:#ccc;margin-top:4px">Photo of packed order at store</div>
+        </div>
+        <div class="photo-box locked" id="delivery-photo" onclick="takeDeliveryPhoto()">
+          <div style="font-size:28px;margin-bottom:6px">&#128247;</div>
+          <div style="font-size:14px;color:#ccc;font-weight:600">Tap &mdash; Delivery Photo</div>
+          <div style="font-size:12px;color:#ccc;margin-top:4px">Complete pickup first</div>
+        </div>
+        <div id="driver-confirmed" style="display:none" class="alert-green"><p>&#9989; Confirmed! R35 added to your earnings.</p></div>
+      </div>
+      <div class="white-card">
+        <div style="font-size:13px;font-weight:700;color:#888;margin-bottom:14px">&#128176; Tonight&apos;s Earnings</div>
+        <div class="earnings-grid">
+          <div class="earn-box"><div class="earn-val">7</div><div class="earn-lbl">Deliveries</div></div>
+          <div class="earn-box"><div class="earn-val">R280</div><div class="earn-lbl">Earned</div></div>
+          <div class="earn-box"><div class="earn-val">R40</div><div class="earn-lbl">Avg/drop</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS = ["Popular","All","Beer","Cider","Whisky","Cognac","Vodka","Rum","Gin","Wine","Bubbly","Yegas","Mixers","Extras"];
+const ZONES = [
+  {name:"Zone 1",areas:"CBD, Sonheuwel, Berghof",fee:50},
+  {name:"Zone 2",areas:"West Acres, Kamagugu, Valencia, Mataffin",fee:65}
+];
+const DRIVERS = [
+  {
+    id: 1,
+    name: "Mphonyana Motsogi",
+    callsign: "Driver #001",
+    vehicle: "Kia Sportage",
+    zone: "Zone 1 & Zone 2",
+    phone: "Umgodi Dispatch",
+    status: "active",
+    emoji: "&#128663;"
+  }
+];
+
+const STORES = [
+  {
+    id: 1,
+    name: "KMG Lifestyle",
+    address: "49 Flamingo Street, Kamagugu",
+    zone: "Zone 2",
+    hours: "12PM - 2AM",
+    badge: "&#127978; KMG Lifestyle &middot; Kamagugu",
+    products: [8, 11, 15]  // Corona, Savanna Dry, Brutal Fruit
+  }
+];
+
+// KMG Lifestyle real prices (store prices + 12% markup)
+const KMG_PRICES = {
+  8: 168,   // Corona 6-pack (store R150 + 12%)
+  11: 168,  // Savanna Dry 6-pack (store R150 + 12%)
+  15: 151,  // Brutal Fruit 6-pack (store R135 + 12%)
+};
+
+const PRODUCTS = [
+  {id:1,name:"Castle Lager 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:true,price:89},
+  {id:2,name:"Castle Lite 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:true,price:92},
+  {id:3,name:"Black Label 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:true,price:89},
+  {id:4,name:"Carling Black Label 750ml",cat:"Beer",size:"750ml",emoji:"&#127866;",pop:true,price:22},
+  {id:5,name:"Heineken 6-pack",cat:"Beer",size:"6x330ml",emoji:"&#127866;",pop:true,price:110},
+  {id:6,name:"Hansa Pilsener 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:false,price:85},
+  {id:7,name:"Amstel Lager 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:false,price:88},
+  {id:8,name:"Corona Extra 6-pack",cat:"Beer",size:"6x355ml",emoji:"&#127866;",pop:true,price:168,store:"KMG Lifestyle"},
+  {id:9,name:"Windhoek Lager 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:false,price:95},
+  {id:11,name:"Savanna Dry 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:true,price:168,store:"KMG Lifestyle"},
+  {id:12,name:"Savanna Premium 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:false,price:110},
+  {id:13,name:"Hunters Gold 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:true,price:95},
+  {id:14,name:"Hunters Dry 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:false,price:95},
+  {id:15,name:"Brutal Fruit Ruby 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127827;",pop:true,price:151,store:"KMG Lifestyle"},
+  {id:16,name:"Flying Fish Lemon 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127823;",pop:false,price:100},
+  {id:18,name:"Johnnie Walker Red 750ml",cat:"Whisky",size:"750ml",emoji:"&#129347;",pop:true,price:289},
+  {id:19,name:"Johnnie Walker Black 750ml",cat:"Whisky",size:"750ml",emoji:"&#129347;",pop:true,price:389},
+  {id:20,name:"Jack Daniel's 750ml",cat:"Whisky",size:"750ml",emoji:"&#129347;",pop:true,price:319},
+  {id:21,name:"Jameson Irish 750ml",cat:"Whisky",size:"750ml",emoji:"&#129347;",pop:true,price:299},
+  {id:22,name:"Klipdrift Premium 750ml",cat:"Whisky",size:"750ml",emoji:"&#129347;",pop:true,price:189},
+  {id:25,name:"Smirnoff 1818 750ml",cat:"Vodka",size:"750ml",emoji:"&#127864;",pop:true,price:199},
+  {id:26,name:"Absolut Original 750ml",cat:"Vodka",size:"750ml",emoji:"&#127864;",pop:true,price:249},
+  {id:27,name:"Cruz Watermelon 750ml",cat:"Vodka",size:"750ml",emoji:"&#127817;",pop:true,price:189},
+  {id:28,name:"Ciroc 750ml",cat:"Vodka",size:"750ml",emoji:"&#127864;",pop:false,price:499},
+  {id:30,name:"Hennessy VS 750ml",cat:"Cognac",size:"750ml",emoji:"&#129347;",pop:true,price:599},
+  {id:31,name:"Hennessy VSOP 750ml",cat:"Cognac",size:"750ml",emoji:"&#129347;",pop:true,price:899},
+  {id:32,name:"Remy Martin VS 750ml",cat:"Cognac",size:"750ml",emoji:"&#129347;",pop:false,price:549},
+  {id:33,name:"Captain Morgan 750ml",cat:"Rum",size:"750ml",emoji:"&#9973;",pop:true,price:229},
+  {id:34,name:"Bacardi White 750ml",cat:"Rum",size:"750ml",emoji:"&#9973;",pop:false,price:219},
+  {id:35,name:"Bombay Sapphire 750ml",cat:"Gin",size:"750ml",emoji:"&#129785;",pop:true,price:349},
+  {id:36,name:"Gordon's Pink Gin 750ml",cat:"Gin",size:"750ml",emoji:"&#127800;",pop:true,price:249},
+  {id:37,name:"Hendrick's Gin 750ml",cat:"Gin",size:"750ml",emoji:"&#129362;",pop:false,price:499},
+  {id:38,name:"Four Cousins Sweet Red 750ml",cat:"Wine",size:"750ml",emoji:"&#127863;",pop:true,price:75},
+  {id:39,name:"Drostdy-Hof Adelpragt 750ml",cat:"Wine",size:"750ml",emoji:"&#127863;",pop:true,price:79},
+  {id:40,name:"J.C. Le Roux La Vallee 750ml",cat:"Bubbly",size:"750ml",emoji:"&#129346;",pop:true,price:99},
+  {id:41,name:"Pongracz Brut 750ml",cat:"Bubbly",size:"750ml",emoji:"&#129346;",pop:false,price:179},
+  {id:42,name:"Jagermeister 750ml",cat:"Yegas",size:"750ml",emoji:"&#129420;",pop:true,price:289},
+  {id:43,name:"Olmeca Tequila Gold 750ml",cat:"Yegas",size:"750ml",emoji:"&#127797;",pop:true,price:249},
+  {id:44,name:"Amarula 750ml",cat:"Yegas",size:"750ml",emoji:"&#128024;",pop:true,price:199},
+  {id:45,name:"Coca Cola 2L",cat:"Mixers",size:"2L",emoji:"&#129380;",pop:true,price:28},
+  {id:46,name:"Schweppes Tonic 6-pack",cat:"Mixers",size:"6-pack",emoji:"&#129380;",pop:true,price:65},
+  {id:47,name:"Fever-Tree Indian Tonic 750ml",cat:"Mixers",size:"750ml",emoji:"&#127807;",pop:false,price:89},
+  {id:48,name:"Ice Bag 2kg",cat:"Extras",size:"2kg",emoji:"&#129354;",pop:true,price:25},
+  {id:49,name:"Simba Chips 145g",cat:"Extras",size:"145g",emoji:"&#127839;",pop:true,price:22},
+  {id:50,name:"Doritos Nacho Cheese 145g",cat:"Extras",size:"145g",emoji:"&#127789;",pop:true,price:25},
+  {id:51,name:"Grandpa Headache Powders",cat:"Extras",size:"12-pack",emoji:"&#128138;",pop:false,price:35},
+  {id:52,name:"Durex Originals 3-pack",cat:"Extras",size:"3-pack",emoji:"&#128666;",pop:false,price:89},
+];
+
+let cart = {};
+let activeFilter = "Popular";
+let activePay = "snap";
+let selectedZone = ZONES[0];
+let orderStage = 0;
+let pickupDone = false;
+let deliveryDone = false;
+let problemReported = false;
+let activeStore = null;
+
+
+// PAYMENT SUCCESS HANDLER
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('payment') === 'success') {
+    const orderNum = params.get('order') || 'UM00001';
+    const pin = params.get('pin') || '0000';
+    setTimeout(() => {
+      document.getElementById('splash').classList.add('hide');
+      document.getElementById('home-screen').style.display = 'none';
+      document.getElementById('tracking-screen').classList.add('active');
+      document.getElementById('track-icon').textContent = '✅';
+      document.getElementById('track-title').textContent = 'Payment Successful!';
+      document.getElementById('track-steps').innerHTML = `
+        <div style="background:linear-gradient(135deg,#1a0f02,#2a1a08);border-radius:16px;padding:24px;text-align:center;margin-bottom:16px">
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px">Order Number</div>
+          <div style="font-size:28px;font-weight:900;color:#E8A020;font-family:'Playfair Display',serif">${orderNum}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:16px;margin-bottom:4px">Your Order PIN</div>
+          <div style="font-size:48px;font-weight:900;color:#fff;letter-spacing:8px">${pin}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:8px">Share this PIN with your driver upon delivery</div>
+        </div>
+        <div style="background:#f0faf0;border:1px solid #c6e8c6;border-radius:12px;padding:16px;text-align:center">
+          <div style="font-size:14px;font-weight:700;color:#2d7a2d">✅ Order confirmed & driver notified!</div>
+          <div style="font-size:12px;color:#888;margin-top:4px">Est. delivery ~30 mins</div>
+        </div>
+      `;
+    }, 2700);
+  }
+});
+
+// AGE GATE
+function initAgeGate() {
+  const verified = localStorage.getItem('umgodi_age_verified');
+  if (verified === 'true') {
+    document.getElementById('age-gate').classList.add('hide');
+  }
+}
+
+function ageYes() {
+  localStorage.setItem('umgodi_age_verified', 'true');
+  document.getElementById('age-gate').style.opacity = '0';
+  document.getElementById('age-gate').style.transition = 'opacity 0.4s ease';
+  setTimeout(() => document.getElementById('age-gate').classList.add('hide'), 400);
+}
+
+function ageNo() {
+  document.getElementById('age-box').innerHTML = `
+    <div class="age-blocked">
+      <div style="font-size:48px;margin-bottom:16px">&#128683;</div>
+      <h2>Sorry, you cannot enter</h2>
+      <div class="age-divider"></div>
+      <p>You must be 18 years or older to access Umgodi. The sale of alcohol to persons under 18 is prohibited by South African law.</p>
+      <p style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.2)">&#169; Umgodi &mdash; Standford Elizabeth Group (Pty) Ltd</p>
+    </div>
+  `;
+}
+
+// Run age gate check on load
+initAgeGate();
+
+// SPLASH
+setTimeout(() => document.getElementById('splash').classList.add('hide'), 2600);
+
+// INIT
+window.addEventListener('DOMContentLoaded', () => {
+  buildStoreList();
+  buildZoneOptions();
+});
+
+function buildStoreList() {
+  const list = document.getElementById('store-list');
+  list.innerHTML = STORES.map(s => `
+    <div onclick="selectStore(${s.id})" style="background:#fff;border-radius:16px;padding:24px;cursor:pointer;border:2px solid #f0ede8;transition:all 0.2s;box-shadow:0 2px 12px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#E8A020';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#f0ede8';this.style.transform='translateY(0)'">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#E8A020,#C8601A);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px">&#127866;</div>
+        <div>
+          <div style="font-weight:800;font-size:17px;color:#1a0f02">${s.name}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px">&#128205; ${s.address}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <span style="background:#fdf6ee;color:#C8601A;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600">&#128666; ${s.zone}</span>
+        <span style="background:#fdf6ee;color:#C8601A;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600">&#128336; ${s.hours}</span>
+        <span style="background:#fdf6ee;color:#C8601A;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600">&#128230; ${s.products.length} products</span>
+      </div>
+      <button style="width:100%;padding:12px;background:linear-gradient(135deg,#E8A020,#C8601A);color:#fff;border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">
+        Shop Now &#8594;
+      </button>
+    </div>
+  `).join('') + `
+    <div style="background:#fff;border-radius:16px;padding:24px;border:2px dashed #f0ede8;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">&#43;</div>
+      <div style="font-weight:700;color:#888;font-size:15px">More stores coming soon</div>
+      <div style="font-size:12px;color:#bbb;margin-top:4px">Are you a store? Join Umgodi!</div>
+    </div>
+  `;
+}
+
+function selectStore(storeId) {
+  activeStore = STORES.find(s => s.id === storeId);
+  cart = {};
+  activeFilter = "All";
+  
+  // Update zone based on store
+  selectedZone = ZONES.find(z => z.name === activeStore.zone) || ZONES[0];
+  
+  // Hide store screen, show product screen
+  document.getElementById('store-screen').style.display = 'none';
+  document.getElementById('mobile-cats').style.display = '';
+  document.getElementById('main-layout').style.display = '';
+  
+  // Update store badge
+  document.getElementById('active-store-badge').innerHTML = '&#127978; ' + activeStore.name + ' &middot; ' + activeStore.address.split(',')[1]?.trim();
+  
+  // Add back button
+  document.getElementById('section-title').innerHTML = '<button onclick="backToStores()" style="background:none;border:none;cursor:pointer;color:#E8A020;font-size:13px;font-weight:700;padding:0;font-family:DM Sans,sans-serif;margin-bottom:4px">&#8592; All Stores</button><br>' + activeStore.name;
+
+  buildCats();
+  renderProducts();
+  window.scrollTo(0,0);
+}
+
+function backToStores() {
+  cart = {};
+  activeStore = null;
+  document.getElementById('store-screen').style.display = '';
+  document.getElementById('mobile-cats').style.display = 'none';
+  document.getElementById('main-layout').style.display = 'none';
+  updateCartUI();
+  window.scrollTo(0,0);
+}
+
+function buildCats() {
+  const sb = document.getElementById('sidebar-cats');
+  const mb = document.getElementById('mobile-cats');
+  CATS.forEach(c => {
+    const label = c === 'Popular' ? '&#128293; Popular' : c;
+    const btn = `<button class="cat-btn ${c===activeFilter?'active':''}" onclick="setFilter('${c}')">${label}</button>`;
+    const mbtn = `<button class="mobile-cat-btn ${c===activeFilter?'active':''}" onclick="setFilter('${c}')">${label}</button>`;
+    sb.innerHTML += btn;
+    mb.innerHTML += mbtn;
+  });
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mobile-cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cat-btn').forEach(b => { if(b.textContent.trim().includes(f)) b.classList.add('active'); });
+  document.querySelectorAll('.mobile-cat-btn').forEach(b => { if(b.textContent.trim().includes(f)) b.classList.add('active'); });
+  document.getElementById('nav-search-input').value = '';
+  document.getElementById('mob-search-input').value = '';
+  renderProducts();
+}
+
+function filterProducts() {
+  renderProducts();
+}
+
+function getSearch() {
+  const n = document.getElementById('nav-search-input').value;
+  const m = document.getElementById('mob-search-input').value;
+  return (n || m).toLowerCase();
+}
+
+function renderProducts() {
+  const s = getSearch();
+  const storeProductIds = activeStore ? activeStore.products : [];
+  const filtered = PRODUCTS.filter(p => {
+    if (activeStore && !storeProductIds.includes(p.id)) return false;
+    const matchCat = activeFilter === 'All' ? true : activeFilter === 'Popular' ? p.pop : p.cat === activeFilter;
+    const matchSearch = s === '' ? true : p.name.toLowerCase().includes(s) || p.cat.toLowerCase().includes(s);
+    return matchCat && matchSearch;
+  });
+
+  const title = s ? `Results for "${s}"` : activeFilter === 'Popular' ? '&#128293; Most Popular' : activeFilter === 'All' ? 'All Products' : activeFilter;
+  document.getElementById('section-title').innerHTML = title;
+  document.getElementById('section-sub').textContent = `${filtered.length} products available`;
+
+  const grid = document.getElementById('product-grid');
+  const empty = document.getElementById('empty-state');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card ${cart[p.id]?'in-cart':''}" id="card-${p.id}">
+      ${p.pop ? '<div class="hot-badge">&#128293; HOT</div>' : ''}
+      <span class="product-emoji">${p.emoji}</span>
+      <div class="product-name">${p.name}</div>
+      <div class="product-size">${p.size}</div>
+      <div class="product-price">R${p.price}</div>
+      ${cart[p.id] ?
+        `<div class="qty-ctrl">
+          <button class="qty-btn" onclick="removeItem(${p.id})">&#8722;</button>
+          <span class="qty-num">${cart[p.id]}</span>
+          <button class="qty-btn" onclick="addItem(${p.id})">&#43;</button>
+        </div>` :
+        `<button class="add-btn" onclick="addItem(${p.id})">Add to order</button>`
+      }
+    </div>
+  `).join('');
+}
+
+function addItem(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  updateCartUI();
+  renderProducts();
+}
+
+function removeItem(id) {
+  if (cart[id] > 1) cart[id]--;
+  else delete cart[id];
+  updateCartUI();
+  renderProducts();
+}
+
+function getSubtotal() {
+  return Object.entries(cart).reduce((s,[id,q]) => s + (PRODUCTS.find(p=>p.id===+id)?.price||0)*q, 0);
+}
+
+function getCount() {
+  return Object.values(cart).reduce((a,b)=>a+b,0);
+}
+
+function updateCartUI() {
+  const count = getCount();
+  const sub = getSubtotal();
+  const navBtn = document.getElementById('nav-cart-btn');
+  const floatCart = document.getElementById('float-cart');
+
+  if (count > 0) {
+    navBtn.classList.add('visible');
+    document.getElementById('nav-cart-label').textContent = `${count} items · R${sub}`;
+    floatCart.classList.add('visible');
+    document.getElementById('float-label').textContent = `View Order (${count} items)`;
+    document.getElementById('float-sub').textContent = `R${sub} + delivery`;
+  } else {
+    navBtn.classList.remove('visible');
+    floatCart.classList.remove('visible');
+  }
+}
+
+function showHome() {
+  document.getElementById('home-screen').style.display = 'block';
+  document.getElementById('cart-screen').classList.remove('active');
+  document.getElementById('tracking-screen').classList.remove('active');
+  window.scrollTo(0,0);
+}
+
+function showCart() {
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('cart-screen').classList.add('active');
+  document.getElementById('tracking-screen').classList.remove('active');
+  renderCartItems();
+  renderCartSummary();
+  window.scrollTo(0,0);
+}
+
+function renderCartItems() {
+  const list = document.getElementById('cart-items-list');
+  list.innerHTML = Object.entries(cart).map(([id,qty]) => {
+    const p = PRODUCTS.find(p=>p.id===+id);
+    return `<div class="cart-item">
+      <span class="cart-item-emoji">${p.emoji}</span>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${p.name}</div>
+        <div class="cart-item-size">${p.size}</div>
+      </div>
+      <div class="cart-item-right">
+        <div class="cart-item-price">R${p.price*qty}</div>
+        <div class="mini-qty">
+          <button class="mini-btn" onclick="removeItem(${p.id});renderCartItems();renderCartSummary()">&#8722;</button>
+          <span style="font-size:14px;font-weight:700;width:20px;text-align:center">${qty}</span>
+          <button class="mini-btn" onclick="addItem(${p.id});renderCartItems();renderCartSummary()">&#43;</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildZoneOptions() {
+  const zo = document.getElementById('zone-options');
+  zo.innerHTML = ZONES.map(z => `
+    <div class="zone-option ${z.name===selectedZone.name?'selected':''}" id="zone-${z.name.replace(' ','')}" onclick="selectZone('${z.name}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="zone-option-name">${z.name} &mdash; R${z.fee}</div>
+          <div class="zone-option-areas">${z.areas}</div>
+        </div>
+        <span class="check-mark" id="zcheck-${z.name.replace(' ','')}" style="${z.name===selectedZone.name?'':'display:none'}">&#10003;</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectZone(name) {
+  selectedZone = ZONES.find(z=>z.name===name);
+  ZONES.forEach(z => {
+    const el = document.getElementById('zone-'+z.name.replace(' ',''));
+    const ch = document.getElementById('zcheck-'+z.name.replace(' ',''));
+    el.classList.toggle('selected', z.name===name);
+    ch.style.display = z.name===name ? '' : 'none';
+  });
+  renderCartSummary();
+}
+
+function selectPay(p) {
+  activePay = p;
+  document.getElementById('pay-snap').classList.toggle('selected', p==='snap');
+  document.getElementById('pay-pf').classList.toggle('selected', p==='pf');
+  document.getElementById('snap-check').style.display = p==='snap'?'':'none';
+  document.getElementById('pf-check').style.display = p==='pf'?'':'none';
+}
+
+function renderCartSummary() {
+  const sub = getSubtotal();
+  const fee = selectedZone?.fee || 50;
+  document.getElementById('summary-sub').textContent = `R${sub}`;
+  document.getElementById('summary-del').textContent = `R${fee}`;
+  document.getElementById('summary-total').textContent = `R${sub+fee}`;
+}
+
+function placeOrder() {
+  const sub = getSubtotal();
+  const fee = selectedZone?.fee || 50;
+  const total = sub + fee;
+  const addr = document.getElementById('addr-input').value || 'Not specified';
+
+  if (activePay === 'pf') {
+    const itemsList = Object.entries(cart).map(([id, qty]) => {
+      const p = PRODUCTS.find(p => p.id === +id);
+      return p ? `${p.name} x${qty}` : '';
+    }).filter(Boolean).join(', ');
+
+    const btn = document.querySelector('.place-btn');
+    btn.textContent = '⏳ Sending request...';
+    btn.disabled = true;
+
+    // Step 1 — Send order request, notify Mphonyana via WhatsApp
+    fetch('/api/request-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: total,
+        orderDetails: {
+          store: activeStore ? activeStore.name : 'KMG Lifestyle',
+          items: itemsList,
+          address: addr || 'Not specified',
+          zone: selectedZone?.name || 'Zone 1',
+          customerWA: waNum
+        }
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.orderNum) {
+        // Show waiting screen
+        showWaitingScreen(data.orderNum, total);
+      } else {
+        alert('Error sending request. Please try again.');
+        btn.textContent = 'Request Order 🚀';
+        btn.disabled = false;
+      }
+    })
+    .catch(err => {
+      alert('Error: ' + err.message);
+      btn.textContent = 'Request Order 🚀';
+      btn.disabled = false;
+    });
+    return;
+  }
+
+  // SnapScan or demo — go straight to tracking
+  goToTracking();
+}
+
+function showWaitingScreen(orderNum, amount) {
+  // Hide cart, show tracking screen as waiting
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('cart-screen').classList.remove('active');
+  document.getElementById('tracking-screen').classList.add('active');
+
+  // Update URL so page refresh keeps state
+  history.pushState({}, '', `?waiting=${orderNum}&amount=${amount}`);
+
+  document.getElementById('track-icon').innerHTML = '&#9203;';
+  document.getElementById('track-title').textContent = 'Awaiting Confirmation...';
+  document.getElementById('track-steps').innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:48px;margin-bottom:16px;animation:bounce 1s infinite">&#9203;</div>
+      <div style="font-weight:800;font-size:16px;color:var(--text);margin-bottom:8px">Order Request Sent!</div>
+      <div style="font-size:13px;color:#888;margin-bottom:24px">We are confirming with the store.<br>This usually takes 2-3 minutes.<br><strong>Please keep this screen open!</strong></div>
+      <div style="background:#fdf6ee;border-radius:12px;padding:16px;border:1px solid #f0d8b0;margin-bottom:16px">
+        <div style="font-size:12px;color:#888">Order Reference</div>
+        <div style="font-size:22px;font-weight:900;color:#E8A020">${orderNum}</div>
+        <div style="font-size:12px;color:#888;margin-top:8px">Amount</div>
+        <div style="font-size:18px;font-weight:900;color:var(--text)">R${amount}</div>
+      </div>
+      <div id="waiting-status" style="font-size:13px;color:#aaa">Waiting for store confirmation...</div>
+    </div>
+  `;
+  document.getElementById('track-actions').innerHTML = '';
+
+  // Start polling for approval
+  pollOrderStatus(orderNum, amount);
+  window.scrollTo(0,0);
+}
+
+let pollInterval = null;
+function pollOrderStatus(orderNum, amount) {
+  let attempts = 0;
+  pollInterval = setInterval(() => {
+    attempts++;
+    // Poll the approve-order endpoint to check status
+    // Check localStorage for approval (set by approve-order function)
+    try {
+      const approvedUrl = localStorage.getItem('umgodi_approved_' + orderNum);
+      const declined = localStorage.getItem('umgodi_declined_' + orderNum);
+      
+      const statusEl = document.getElementById('waiting-status');
+      
+      if (approvedUrl) {
+        clearInterval(pollInterval);
+        localStorage.removeItem('umgodi_approved_' + orderNum);
+        if (statusEl) statusEl.textContent = '✅ Confirmed! Redirecting to payment...';
+        setTimeout(() => { window.location.href = approvedUrl; }, 1000);
+        
+      } else if (declined) {
+        clearInterval(pollInterval);
+        localStorage.removeItem('umgodi_declined_' + orderNum);
+        document.getElementById('track-icon').innerHTML = '&#10060;';
+        document.getElementById('track-title').textContent = 'Order Declined';
+        document.getElementById('track-steps').innerHTML = `
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:16px;color:#888;margin-bottom:16px">Sorry, the store cannot fulfil your order right now.</div>
+            <button onclick="showHome()" style="padding:14px 32px;background:linear-gradient(135deg,#E8A020,#C8601A);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">Try Again</button>
+          </div>
+        `;
+      } else if (attempts >= 60) {
+        clearInterval(pollInterval);
+        if (statusEl) statusEl.textContent = '⏰ Timed out. Please try again.';
+      } else {
+        const mins = Math.floor(attempts * 5 / 60);
+        const secs = (attempts * 5) % 60;
+        if (statusEl) statusEl.textContent = `Waiting for confirmation... ${mins > 0 ? mins + 'm ' : ''}${secs}s`;
+      }
+    } catch(e) {}
+  }, 5000);
+}
+
+function proceedToPayment(orderNum, amount) {
+  // Update waiting screen to show payment loading
+  document.getElementById('track-icon').innerHTML = '&#128179;';
+  document.getElementById('track-title').textContent = 'Order Confirmed!';
+  document.getElementById('track-steps').innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:48px;margin-bottom:16px">&#128179;</div>
+      <div style="font-weight:800;font-size:16px;color:var(--text);margin-bottom:8px">Order Accepted!</div>
+      <div style="font-size:13px;color:#888;margin-bottom:16px">Redirecting you to payment...</div>
+      <div style="background:#fdf6ee;border-radius:12px;padding:16px;border:1px solid #f0d8b0">
+        <div style="font-size:12px;color:#888">Order Reference</div>
+        <div style="font-size:22px;font-weight:900;color:#E8A020">${orderNum}</div>
+        <div style="font-size:12px;color:#888;margin-top:8px">Amount</div>
+        <div style="font-size:20px;font-weight:900;color:var(--text)">R${amount}</div>
+      </div>
+    </div>
+  `;
+
+  // Small delay then redirect to Yoco
+  setTimeout(() => {
+    fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        amount: parseFloat(amount), 
+        description: `Umgodi Order ${orderNum}`, 
+        orderDetails: { orderNum } 
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        document.getElementById('waiting-status').textContent = '⚠️ Payment error. Please try again.';
+      }
+    })
+    .catch(err => {
+      document.getElementById('track-steps').innerHTML += `<p style="color:red;font-size:12px">Error: ${err.message}</p>`;
+    });
+  }, 1500);
+}
+
+function goToTracking() {
+  orderStage = 1; pickupDone = false; deliveryDone = false; problemReported = false;
+  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('cart-screen').classList.remove('active');
+  document.getElementById('tracking-screen').classList.add('active');
+  renderTracking();
+  window.scrollTo(0,0);
+}
+
+const STEPS = [
+  {label:"Order received & paid", emoji:"&#9989;", minStage:1},
+  {label:"Store packed &mdash; photo taken &#128248;", emoji:"&#128230;", minStage:1},
+  {label:"Driver collected &mdash; photo taken &#128248;", emoji:"&#128757;", minStage:2},
+  {label:"Driver at your door &mdash; photo taken &#128248;", emoji:"&#128205;", minStage:3},
+  {label:"Confirmed by you &#9989;", emoji:"&#127881;", minStage:4},
+];
+
+function renderTracking() {
+  const icons = ["&#128230;","&#128757;","&#128205;","&#127881;"];
+  const titles = ["Order Confirmed!","On the way! &#128757;","Driver at your door!","Delivered! &#127866;"];
+  const icon = document.getElementById('track-icon');
+  const title = document.getElementById('track-title');
+  icon.innerHTML = icons[Math.min(orderStage-1, 3)];
+  if (orderStage >= 2) icon.style.animation = 'bounce 2s infinite';
+  else icon.style.animation = '';
+  title.innerHTML = titles[Math.min(orderStage-1, 3)];
+
+  const steps = document.getElementById('track-steps');
+  steps.innerHTML = STEPS.map(s => {
+    const done = orderStage > s.minStage;
+    const active = orderStage === s.minStage;
+    return `<div class="track-step ${done?'done':''} ${active?'active':''}">
+      <div class="step-dot ${done?'done':''} ${active?'active':''}"></div>
+      <span class="step-emoji">${s.emoji}</span>
+      <span class="step-text ${done?'done':''} ${active?'active':''}">${s.label}</span>
+    </div>`;
+  }).join('');
+
+  const actions = document.getElementById('track-actions');
+  if (orderStage === 3 && !problemReported) {
+    actions.innerHTML = `
+      <button class="confirm-btn" onclick="confirmDelivery()">&#9989; Received &amp; All Good &mdash; Delete Photos</button>
+      <button class="report-btn" onclick="reportProblem()">&#9888;&#65039; Report a Problem</button>`;
+  } else if (problemReported) {
+    actions.innerHTML = `<div class="alert-red"><p>&#9888;&#65039; Photos kept. Management contacts you within 30 mins.</p></div>`;
+  } else if (orderStage === 4) {
+    actions.innerHTML = `
+      <div class="alert-green"><p>&#128465;&#65039; Photos Deleted &middot; Enjoy! &#127866;</p></div>
+      <button class="place-btn" style="margin-top:14px" onclick="orderAgain()">Order Again &#127866;</button>`;
+  } else {
+    actions.innerHTML = `
+      <div class="demo-ctrl">
+        <div class="demo-label">Demo Controls</div>
+        ${orderStage===1?`<button class="demo-btn" style="background:#6366f1" onclick="advanceStage()">Simulate: Driver Collected &#128248;</button>`:''}
+        ${orderStage===2?`<button class="demo-btn" style="background:#8b5cf6" onclick="advanceStage()">Simulate: Driver Arrived &#128248;</button>`:''}
+      </div>`;
+  }
+}
+
+function advanceStage() {
+  if (orderStage === 1) { pickupDone = true; orderStage = 2; }
+  else if (orderStage === 2) { deliveryDone = true; orderStage = 3; }
+  renderTracking();
+}
+
+function confirmDelivery() {
+  orderStage = 4; pickupDone = false; deliveryDone = false;
+  renderTracking();
+  document.getElementById('driver-confirmed').style.display = 'block';
+}
+
+function reportProblem() {
+  problemReported = true;
+  renderTracking();
+}
+
+function orderAgain() {
+  cart = {}; orderStage = 0;
+  updateCartUI();
+  showHome();
+}
+
+function setTab(t) {
+  document.getElementById('customer-tab').style.display = t==='customer'?'block':'none';
+  document.getElementById('driver-tab').style.display = t==='driver'?'block':'none';
+  document.getElementById('tab-cust').classList.toggle('active', t==='customer');
+  document.getElementById('tab-driv').classList.toggle('active', t==='driver');
+}
+
+function takePickupPhoto() {
+  const box = document.getElementById('pickup-photo');
+  box.classList.add('done');
+  box.innerHTML = '<div style="font-size:28px;margin-bottom:6px">&#9989;</div><div style="font-size:14px;color:#22c55e;font-weight:700">Pickup Photo Captured</div>';
+  const delBox = document.getElementById('delivery-photo');
+  delBox.classList.remove('locked');
+  delBox.querySelector('div:nth-child(2)').style.color = '#888';
+  delBox.querySelector('div:nth-child(3)').textContent = 'Photo at customer door';
+  if (orderStage < 2) { orderStage = 2; }
+  renderTracking();
+}
+
+function takeDeliveryPhoto() {
+  const pbox = document.getElementById('pickup-photo');
+  if (!pbox.classList.contains('done')) return;
+  const box = document.getElementById('delivery-photo');
+  box.classList.add('done');
+  box.innerHTML = '<div style="font-size:28px;margin-bottom:6px">&#9989;</div><div style="font-size:14px;color:#22c55e;font-weight:700">Delivery Photo Captured</div>';
+  if (orderStage < 3) { orderStage = 3; }
+  renderTracking();
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('Umgodi SW registered!', reg))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+</script>
+</body>
+</html>

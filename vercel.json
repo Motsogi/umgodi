@@ -1,0 +1,13 @@
+{
+  "rewrites": [
+    { "source": "/api/approve-order/:order/:action", "destination": "/api/approve-order" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

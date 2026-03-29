@@ -1,3 +1,31 @@
+const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const WA_TOKEN    = process.env.WHATSAPP_ACCESS_TOKEN;
+const MY_NUMBER   = '27686143389';
+
+// â”€â”€ Meta WhatsApp Business API sender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+async function wa(to, text) {
+  const url = `https://graph.facebook.com/v19.0/${WA_PHONE_ID}/messages`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${WA_TOKEN}`,
+    },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      to,
+      type: 'text',
+      text: { body: text },
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    console.error('WhatsApp API error:', JSON.stringify(data));
+  }
+  return data;
+}
+
+// â”€â”€ Main handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -5,22 +33,23 @@ export default async function handler(req, res) {
 
   try {
     const { orderDetails, amount } = req.body;
-    const orderNum = 'UM' + Date.now().toString().slice(-6);
+    const orderNum   = 'UM' + Date.now().toString().slice(-6);
     const customerWA = orderDetails.customerWA || '';
 
-    const KV_URL = process.env.KV_REST_API_URL;
+    // Save order to KV
+    const KV_URL   = process.env.KV_REST_API_URL;
     const KV_TOKEN = process.env.KV_REST_API_TOKEN;
-
     if (KV_URL && KV_TOKEN) {
       await fetch(`${KV_URL}/set/order:${orderNum}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${KV_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          status: 'pending', amount,
-          store: orderDetails.store,
-          items: orderDetails.items,
-          address: orderDetails.address,
-          zone: orderDetails.zone,
+          status: 'pending',
+          amount,
+          store:      orderDetails.store,
+          items:      orderDetails.items,
+          address:    orderDetails.address,
+          zone:       orderDetails.zone,
           customerWA,
         }),
       });
@@ -29,28 +58,30 @@ export default async function handler(req, res) {
     const approveUrl = `https://umgodi.co.za/api/approve-order/${orderNum}/yes`;
     const declineUrl = `https://umgodi.co.za/api/approve-order/${orderNum}/no`;
 
-    const WA = (num, text) =>
-      `https://api.callmebot.com/whatsapp.php?phone=${num}&text=${text}&apikey=3188132`;
-
+    // Message 1 â€” order details
     const msg1 =
-      `NEW%20UMGODI%20ORDER%0A` +
-      `Ref%3A%20${orderNum}%0A` +
-      `Store%3A%20${encodeURIComponent(orderDetails.store)}%0A` +
-      `Items%3A%20${encodeURIComponent(orderDetails.items)}%0A` +
-      `Address%3A%20${encodeURIComponent(orderDetails.address)}%0A` +
-      `Zone%3A%20${encodeURIComponent(orderDetails.zone)}%0A` +
-      `Amount%3A%20R${amount}%0A` +
-      `Customer%20WA%3A%20${customerWA || 'Not%20provided'}`;
+      `ðŸ›’ NEW UMGODI ORDER\n` +
+      `Ref: ${orderNum}\n` +
+      `Store: ${orderDetails.store}\n` +
+      `Items: ${orderDetails.items}\n` +
+      `Address: ${orderDetails.address}\n` +
+      `Zone: ${orderDetails.zone}\n` +
+      `Amount: R${amount}\n` +
+      `Customer WA: ${customerWA || 'Not provided'}`;
 
-    const msg2 = `APPROVE%20${orderNum}%0A${encodeURIComponent(approveUrl)}`;
-    const msg3 = `DECLINE%20${orderNum}%0A${encodeURIComponent(declineUrl)}`;
+    // Message 2 â€” approve link
+    const msg2 = `âœ… APPROVE ${orderNum}\n${approveUrl}`;
 
-    // Fire all 3 WA messages without waiting — avoids timeout
-    fetch(WA('27686143389', msg1)).catch(() => {});
-    fetch(WA('27686143389', msg2)).catch(() => {});
-    fetch(WA('27686143389', msg3)).catch(() => {});
+    // Message 3 â€” decline link
+    const msg3 = `âŒ DECLINE ${orderNum}\n${declineUrl}`;
+
+    // Fire all 3 without awaiting â€” avoids Vercel function timeout
+    wa(MY_NUMBER, msg1).catch(() => {});
+    wa(MY_NUMBER, msg2).catch(() => {});
+    wa(MY_NUMBER, msg3).catch(() => {});
 
     return res.status(200).json({ success: true, orderNum });
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

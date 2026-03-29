@@ -1031,6 +1031,16 @@ function placeOrder() {
       if (data.orderNum) {
         // Show waiting screen
         showWaitingScreen(data.orderNum, total);
+        const _on = data.orderNum;
+        const _au = encodeURIComponent(`https://umgodi.co.za/api/approve-order/${_on}/yes`);
+        const _du = encodeURIComponent(`https://umgodi.co.za/api/approve-order/${_on}/no`);
+        const _m1 = `NEW%20UMGODI%20ORDER%0ARef%3A%20${_on}%0AAmount%3A%20R${total}`;
+        const _m2 = `APPROVE%20${_on}%0A${_au}`;
+        const _m3 = `DECLINE%20${_on}%0A${_du}`;
+        const _w = (t) => fetch(`https://api.callmebot.com/whatsapp.php?phone=27686143389&text=${t}&apikey=3188132`,{mode:"no-cors"});
+        setTimeout(()=>_w(_m1),500);
+        setTimeout(()=>_w(_m2),3000);
+        setTimeout(()=>_w(_m3),5500);
       } else {
         alert('Error sending request. Please try again.');
         btn.textContent = 'Request Order 🚀';

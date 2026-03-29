@@ -1,0 +1,9 @@
+{
+  "name": "Umgodi",
+  "short_name": "Umgodi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#E8A020",
+  "icons": []
+}

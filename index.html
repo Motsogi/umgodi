@@ -1000,8 +1000,7 @@ function placeOrder() {
   const fee = selectedZone?.fee || 50;
   const total = sub + fee;
   const addr = document.getElementById('addr-input').value || 'Not specified';
-  waNum = document.getElementById('wa-input').value.replace(/\D/g, '') || '';
-  if (activePay === 'pf') {
+  waNum = document.getElementById('wa-input').value.replace(/\D/g, '').replace(/^0/, '27') || '';  if (activePay === 'pf') {
     const itemsList = Object.entries(cart).map(([id, qty]) => {
       const p = PRODUCTS.find(p => p.id === +id);
       return p ? `${p.name} x${qty}` : '';

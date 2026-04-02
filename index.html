@@ -1083,33 +1083,34 @@ function showWaitingScreen(orderNum, amount) {
 let pollInterval = null;
 function pollOrderStatus(orderNum, amount) {
   let attempts = 0;
-  pollInterval = setInterval(() => {
+  pollInterval = setInterval(async () => {
     attempts++;
-    // Poll the approve-order endpoint to check status
-    // Check localStorage for approval (set by approve-order function)
     try {
-      const approvedUrl = localStorage.getItem('umgodi_approved_' + orderNum);
-      const declined = localStorage.getItem('umgodi_declined_' + orderNum);
-      
+      const r = await fetch(`/api/check-order?order=${orderNum}`);
+      const d = await r.json();
       const statusEl = document.getElementById('waiting-status');
-      
-      if (approvedUrl) {
+
+      if (d.status === 'approved') {
         clearInterval(pollInterval);
-        localStorage.removeItem('umgodi_approved_' + orderNum);
-        if (statusEl) statusEl.textContent = '✅ Confirmed! Redirecting to payment...';
-        setTimeout(() => { window.location.href = approvedUrl; }, 1000);
-        
-      } else if (declined) {
+        document.getElementById('track-icon').innerHTML = '✅';
+        document.getElementById('track-title').textContent = 'Order Approved!';
+        document.getElementById('track-steps').innerHTML = `
+          <div style="text-align:center;padding:20px">
+            <div style="font-size:48px;margin-bottom:16px">✅</div>
+            <div style="font-weight:800;font-size:16px;color:var(--text);margin-bottom:8px">Your order has been approved!</div>
+            <div style="font-size:13px;color:#888;margin-bottom:24px">Check your WhatsApp for the payment link.</div>
+          </div>`;
+      } else if (d.status === 'declined') {
         clearInterval(pollInterval);
-        localStorage.removeItem('umgodi_declined_' + orderNum);
-        document.getElementById('track-icon').innerHTML = '&#10060;';
+        document.getElementById('track-icon').innerHTML = '❌';
         document.getElementById('track-title').textContent = 'Order Declined';
         document.getElementById('track-steps').innerHTML = `
           <div style="text-align:center;padding:20px">
-            <div style="font-size:16px;color:#888;margin-bottom:16px">Sorry, the store cannot fulfil your order right now.</div>
-            <button onclick="showHome()" style="padding:14px 32px;background:linear-gradient(135deg,#E8A020,#C8601A);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif">Try Again</button>
-          </div>
-        `;
+            <div style="font-size:48px;margin-bottom:16px">❌</div>
+            <div style="font-weight:800;font-size:16px;color:#c0392b;margin-bottom:8px">Order could not be fulfilled.</div>
+            <div style="font-size:13px;color:#888;margin-bottom:24px">Please try again later.</div>
+            <button onclick="showHome()" style="padding:14px 32px;background:linear-gradient(135deg,#E8A020,#C8601A);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer">Try Again</button>
+          </div>`;
       } else if (attempts >= 60) {
         clearInterval(pollInterval);
         if (statusEl) statusEl.textContent = '⏰ Timed out. Please try again.';
@@ -1121,7 +1122,6 @@ function pollOrderStatus(orderNum, amount) {
     } catch(e) {}
   }, 5000);
 }
-
 function proceedToPayment(orderNum, amount) {
   // Update waiting screen to show payment loading
   document.getElementById('track-icon').innerHTML = '&#128179;';

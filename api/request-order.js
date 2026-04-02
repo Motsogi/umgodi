@@ -70,8 +70,8 @@ const customerPhone = orderDetails.customerPhone || '';    // Save order to KV
         { type: 'text', text: orderDetails.items || '' },
         { type: 'text', text: orderDetails.address || '' },
         { type: 'text', text: String(amount) },
-        { type: 'text', text: customerWA || 'Not provided' },
-        { type: 'text', text: `WA: ${customerWA} | 📞 ${customerPhone}` },
+       { type: 'text', text: `${customerWA || 'Not provided'} | 📞 ${customerPhone}` },
+        { type: 'text', text: approveUrl },
         { type: 'text', text: declineUrl },
       ],
     }];

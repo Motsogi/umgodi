@@ -2,8 +2,8 @@ const WA_PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 const WA_TOKEN    = process.env.WHATSAPP_ACCESS_TOKEN;
 const MY_NUMBER   = '27686143389';
 
-// â”€â”€ Meta WhatsApp Business API sender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-async function wa(to, text) {
+// â”€â”€ Meta WhatsApp Template Message sender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+async function waTemplate(to, templateName, components) {
   const url = `https://graph.facebook.com/v19.0/${WA_PHONE_ID}/messages`;
   const res = await fetch(url, {
     method: 'POST',
@@ -14,8 +14,12 @@ async function wa(to, text) {
     body: JSON.stringify({
       messaging_product: 'whatsapp',
       to,
-      type: 'text',
-      text: { body: text },
+      type: 'template',
+      template: {
+        name: templateName,
+        language: { code: 'en' },
+        components,
+      },
     }),
   });
   const data = await res.json();
@@ -58,27 +62,22 @@ export default async function handler(req, res) {
     const approveUrl = `https://umgodi.co.za/api/approve-order/${orderNum}/yes`;
     const declineUrl = `https://umgodi.co.za/api/approve-order/${orderNum}/no`;
 
-    // Message 1 â€” order details
-    const msg1 =
-      `ðŸ›’ NEW UMGODI ORDER\n` +
-      `Ref: ${orderNum}\n` +
-      `Store: ${orderDetails.store}\n` +
-      `Items: ${orderDetails.items}\n` +
-      `Address: ${orderDetails.address}\n` +
-      `Zone: ${orderDetails.zone}\n` +
-      `Amount: R${amount}\n` +
-      `Customer WA: ${customerWA || 'Not provided'}`;
+    // Send umgodi_order_received template to Mpho
+    const components = [{
+      type: 'body',
+      parameters: [
+        { type: 'text', text: orderNum },
+        { type: 'text', text: orderDetails.store || 'KMG Lifestyle' },
+        { type: 'text', text: orderDetails.items || '' },
+        { type: 'text', text: orderDetails.address || '' },
+        { type: 'text', text: String(amount) },
+        { type: 'text', text: customerWA || 'Not provided' },
+        { type: 'text', text: approveUrl },
+        { type: 'text', text: declineUrl },
+      ],
+    }];
 
-    // Message 2 â€” approve link
-    const msg2 = `âœ… APPROVE ${orderNum}\n${approveUrl}`;
-
-    // Message 3 â€” decline link
-    const msg3 = `âŒ DECLINE ${orderNum}\n${declineUrl}`;
-
-    // Fire all 3 without awaiting â€” avoids Vercel function timeout
-    wa(MY_NUMBER, msg1).catch(() => {});
-    wa(MY_NUMBER, msg2).catch(() => {});
-    wa(MY_NUMBER, msg3).catch(() => {});
+    waTemplate(MY_NUMBER, 'umgodi_order_received', components).catch(() => {});
 
     return res.status(200).json({ success: true, orderNum });
 

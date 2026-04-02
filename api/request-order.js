@@ -77,8 +77,7 @@ export default async function handler(req, res) {
       ],
     }];
 
-    waTemplate(MY_NUMBER, 'umgodi_order_received', components).catch(() => {});
-
+await waTemplate(MY_NUMBER, 'umgodi_order_received', components);
     return res.status(200).json({ success: true, orderNum });
 
   } catch (err) {

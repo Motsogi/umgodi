@@ -675,7 +675,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (params.get('payment') === 'success') {
     const orderNum = params.get('order') || 'UM00001';
     const pin = params.get('pin') || '0000';
-    setTimeout(() => {
+    fetch('/api/payment-success', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderNum, amount }) });    setTimeout(() => {
       document.getElementById('splash').classList.add('hide');
       document.getElementById('home-screen').style.display = 'none';
       document.getElementById('tracking-screen').classList.add('active');

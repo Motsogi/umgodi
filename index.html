@@ -277,7 +277,23 @@
   .age-divider { width: 60px; height: 2px; background: linear-gradient(90deg, #E8A020, #C8601A); margin: 20px auto; border-radius: 2px; }
 </style>
 </head>
-<body>
+<div id="disclaimer-popup" style="position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#1a1008;border:1px solid rgba(232,160,32,0.25);border-radius:24px;padding:40px 32px;max-width:440px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+    <div style="font-size:44px;margin-bottom:12px">⚠️</div>
+    <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:#fff;margin-bottom:8px">Important Notice</div>
+    <div style="width:50px;height:2px;background:linear-gradient(90deg,#E8A020,#C8601A);margin:0 auto 16px;border-radius:2px"></div>
+    <p style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:10px">Umgodi is an <strong style="color:#E8A020">order facilitation service</strong>. We do not hold a liquor licence and do not sell alcohol directly.</p>
+    <p style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:10px">All orders are fulfilled by licensed liquor retailers. Delivery is subject to store availability.</p>
+    <p style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:24px">🔞 By using this service you confirm you are <strong style="color:#fff">18 years or older</strong>. Selling alcohol to persons under 18 is prohibited by South African law.</p>
+    <button onclick="document.getElementById('disclaimer-popup').style.display='none';localStorage.setItem('umgodi_disclaimer_seen','true')" style="width:100%;padding:14px;background:linear-gradient(135deg,#E8A020,#C8601A);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ &nbsp;I Understand &amp; Agree</button>
+    <p style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:14px">© Umgodi — Standford Elizabeth Group (Pty) Ltd</p>
+  </div>
+</div>
+<script>
+  if(localStorage.getItem('umgodi_disclaimer_seen')==='true'){
+    document.getElementById('disclaimer-popup').style.display='none';
+  }
+</script>
 
 <!-- SPLASH -->
 <div id="splash">
@@ -474,7 +490,7 @@
           <div class="card-label">Delivery Zone</div>
           <div id="zone-options"></div>
           <input class="addr-input" type="text" placeholder="&#128205; Enter delivery address..." id="addr-input"/>
-          <input class="addr-input" type="tel" placeholder="📱 WhatsApp number (e.g. 0795860549)" id="wa-input" style="margin-top:10px">        </div>
+          <input class="addr-input" type="tel" placeholder="Customer Phone Number (e.g. 0795860549)" id="wa-input" style="margin-top:10px">        </div>
         <div class="white-card">
           <div class="card-label">Payment</div>
           <div class="pay-option selected" id="pay-snap" onclick="selectPay('snap')">
@@ -486,11 +502,12 @@
         </div>
         <div class="white-card">
           <div class="card-label">Order Summary</div>
-          <div class="summary-row"><span>Subtotal</span><span id="summary-sub">R0</span></div>
-          <div class="summary-row"><span>Delivery fee</span><span id="summary-del">R50</span></div>
-          <div class="summary-total"><span>Total</span><span id="summary-total">R0</span></div>
-          <div class="security-note">&#128274; Photo-verified delivery &mdash; photos auto-deleted on confirmation</div>
-          <button class="place-btn" onclick="placeOrder()">Request Order &#128640;</button>
+<div class="summary-row"><span>Subtotal</span><span id="summary-sub">R0</span></div>
+<div class="summary-row"><span>Delivery fee</span><span id="summary-del">R50</span></div>
+<div class="summary-row"><span>Packer fee</span><span id="summary-packer">R10</span></div>
+<div class="summary-total"><span>Total</span><span id="summary-total">R0</span></div>
+<div class="security-note">&#128274; Photo-verified delivery &mdash; photos auto-deleted on confirmation</div>
+<button class="place-btn" onclick="placeOrder()">Request Order &#128640;</button>
         </div>
       </div>
     </div>

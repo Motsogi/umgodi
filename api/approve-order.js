@@ -1,10 +1,10 @@
 const YOCO_SECRET_KEY = process.env.YOCO_SECRET_KEY;
-const WA_PHONE_ID    = process.env.WHATSAPP_PHONE_NUMBER_ID;
-const WA_TOKEN       = process.env.WHATSAPP_ACCESS_TOKEN;
-const MY_NUMBER      = '27686143389';
+const WA_PHONE_ID     = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const WA_TOKEN        = process.env.WHATSAPP_ACCESS_TOKEN;
+const MY_NUMBER       = '27686143389';
 
-// â”€â”€ Meta WhatsApp Business API sender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-async function wa(to, text) {
+// â”€â”€ Meta WhatsApp Template Message sender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+async function waTemplate(to, templateName, components) {
   const url = `https://graph.facebook.com/v19.0/${WA_PHONE_ID}/messages`;
   const res = await fetch(url, {
     method: 'POST',
@@ -15,8 +15,12 @@ async function wa(to, text) {
     body: JSON.stringify({
       messaging_product: 'whatsapp',
       to,
-      type: 'text',
-      text: { body: text },
+      type: 'template',
+      template: {
+        name: templateName,
+        language: { code: 'en' },
+        components,
+      },
     }),
   });
   const data = await res.json();
@@ -45,12 +49,10 @@ function htmlPage(icon, title, color, orderNum, bodyExtra = '') {
 
 // â”€â”€ Main handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default async function handler(req, res) {
-  // URL shape: /api/approve-order/UM123456/yes  OR  /api/approve-order/UM123456/no
   const urlParts = (req.url || '').split('?')[0].split('/').filter(Boolean);
   const order  = urlParts[urlParts.length - 2] || '';
   const action = urlParts[urlParts.length - 1] || '';
 
-  // Fallback to query params (?o=UM123456&a=yes)
   const q = req.query || {};
   const finalOrder  = (order.startsWith('UM')               ? order  : q.o) || '';
   const finalAction = (action === 'yes' || action === 'no'  ? action : q.a) || '';
@@ -68,7 +70,6 @@ export default async function handler(req, res) {
   const KV_TOKEN = process.env.KV_REST_API_TOKEN;
 
   try {
-    // Fetch order from Vercel KV
     let orderData = {};
     if (KV_URL && KV_TOKEN) {
       try {
@@ -118,23 +119,33 @@ export default async function handler(req, res) {
         }).catch(() => {});
       }
 
-      // Notify Mpho
-      await wa(MY_NUMBER,
-        `âœ… ORDER APPROVED\nRef: ${finalOrder}\nPayment link sent to customer!`
-      );
+      // Notify Mpho via umgodi_order_received template (status update)
+      waTemplate(MY_NUMBER, 'umgodi_order_received', [{
+        type: 'body',
+        parameters: [
+          { type: 'text', text: finalOrder },
+          { type: 'text', text: orderData.store || 'KMG Lifestyle' },
+          { type: 'text', text: orderData.items || '' },
+          { type: 'text', text: orderData.address || '' },
+          { type: 'text', text: String(amount) },
+          { type: 'text', text: customerWA || 'Not provided' },
+          { type: 'text', text: 'APPROVED - Payment link sent to customer' },
+          { type: 'text', text: '' },
+        ],
+      }]).catch(() => {});
 
-      // Notify customer
+      // Notify customer via umgodi_order_confirmed template
       if (customerWA) {
         await new Promise(r => setTimeout(r, 1000));
-        await wa(customerWA,
-          `ðŸº UMGODI ORDER CONFIRMED!\n\n` +
-          `Hi! Your order has been accepted.\n` +
-          `Ref: ${finalOrder}\n` +
-          `Store: ${orderData.store || 'KMG Lifestyle'}\n` +
-          `Amount: R${amount}\n\n` +
-          `TAP TO PAY NOW:\n${paymentUrl}\n\n` +
-          `After hours, sorted.\numgodi.co.za`
-        );
+        waTemplate(customerWA, 'umgodi_order_confirmed', [{
+          type: 'body',
+          parameters: [
+            { type: 'text', text: finalOrder },
+            { type: 'text', text: orderData.store || 'KMG Lifestyle' },
+            { type: 'text', text: String(amount) },
+            { type: 'text', text: paymentUrl },
+          ],
+        }]).catch(() => {});
       }
 
       const bodyExtra = `
@@ -161,19 +172,17 @@ export default async function handler(req, res) {
         }).catch(() => {});
       }
 
-      // Notify Mpho
-      await wa(MY_NUMBER,
-        `âŒ ORDER DECLINED\nRef: ${finalOrder}`
-      );
-
-      // Notify customer
+      // Notify customer of decline via umgodi_order_confirmed template
       if (customerWA) {
-        await new Promise(r => setTimeout(r, 1000));
-        await wa(customerWA,
-          `UMGODI ORDER UPDATE\n\n` +
-          `Sorry, your order ${finalOrder} could not be fulfilled at this time.\n\n` +
-          `Please try again later.\numgodi.co.za`
-        );
+        waTemplate(customerWA, 'umgodi_order_confirmed', [{
+          type: 'body',
+          parameters: [
+            { type: 'text', text: finalOrder },
+            { type: 'text', text: orderData.store || 'KMG Lifestyle' },
+            { type: 'text', text: String(amount) },
+            { type: 'text', text: 'Sorry, your order could not be fulfilled. Please try again later.' },
+          ],
+        }]).catch(() => {});
       }
 
       return res.status(200).setHeader('Content-Type', 'text/html').send(

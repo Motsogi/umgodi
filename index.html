@@ -534,7 +534,7 @@
       <div class="track-hero">
         <span class="track-icon" id="track-icon">&#128230;</span>
         <div class="track-title" id="track-title">Order Confirmed!</div>
-        <div class="track-sub">Est. ~30 mins &middot; KMG Lifestyle, Kamagugu</div>
+        <div class="track-sub">Est. ~30 mins &middot; Umgodi Store, Kamagugu</div>
       <div style="background:#fdf6ee;border-radius:12px;padding:12px 16px;margin-top:12px;display:flex;align-items:center;gap:12px;border:1px solid #f0d8b0">
         <div style="width:40px;height:40px;background:linear-gradient(135deg,#E8A020,#C8601A);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#128663;</div>
         <div>
@@ -559,7 +559,7 @@
       </div>
       <div class="white-card" style="background:#fdf6ee;border-color:#f0d8b0">
         <div style="font-size:14px;font-weight:700;color:var(--ember);margin-bottom:14px">&#128230; Active Order #UM2847</div>
-        <div style="font-size:14px;color:#666;margin-bottom:8px"><strong style="color:#888">&#127978; Pickup:</strong> KMG Lifestyle, 49 Flamingo Street, Kamagugu</div>
+        <div style="font-size:14px;color:#666;margin-bottom:8px"><strong style="color:#888">&#127978; Pickup:</strong> Umgodi Store, 49 Flamingo Street, Kamagugu</div>
         <div style="font-size:14px;color:#666;margin-bottom:8px"><strong style="color:#888">&#128205; Deliver to:</strong> 14 Sonheuwel Ave, Nelspruit</div>
         <div style="font-size:14px;color:#666;margin-bottom:16px"><strong style="color:#888">&#128506; Zone:</strong> Zone 1 &middot; ~3.2km &middot; Earn R35</div>
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">&#128247; Required Photos</div>
@@ -609,7 +609,7 @@ const DRIVERS = [
 const STORES = [
   {
     id: 1,
-    name: "KMG Lifestyle",
+    name: "Umgodi Store",
     address: "49 Flamingo Street, Kamagugu",
     zone: "Zone 2",
     hours: "12PM - 2AM",
@@ -633,13 +633,13 @@ const PRODUCTS = [
   {id:5,name:"Heineken 6-pack",cat:"Beer",size:"6x330ml",emoji:"&#127866;",pop:true,price:110},
   {id:6,name:"Hansa Pilsener 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:false,price:85},
   {id:7,name:"Amstel Lager 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:false,price:88},
-  {id:8,name:"Corona Extra 6-pack",cat:"Beer",size:"6x355ml",emoji:"&#127866;",pop:true,price:168,store:"KMG Lifestyle"},
+  {id:8,name:"Corona Extra 6-pack",cat:"Beer",size:"6x355ml",emoji:"&#127866;",pop:true,price:168,store:"Umgodi Store"},
   {id:9,name:"Windhoek Lager 6-pack",cat:"Beer",size:"6x340ml",emoji:"&#127866;",pop:false,price:95},
-  {id:11,name:"Savanna Dry 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:true,price:168,store:"KMG Lifestyle"},
+  {id:11,name:"Savanna Dry 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:true,price:168,store:"Umgodi Store"},
   {id:12,name:"Savanna Premium 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:false,price:110},
   {id:13,name:"Hunters Gold 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:true,price:95},
   {id:14,name:"Hunters Dry 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127819;",pop:false,price:95},
-  {id:15,name:"Brutal Fruit Ruby 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127827;",pop:true,price:151,store:"KMG Lifestyle"},
+  {id:15,name:"Brutal Fruit Ruby 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127827;",pop:true,price:151,store:"Umgodi Store"},
   {id:16,name:"Flying Fish Lemon 6-pack",cat:"Cider",size:"6x330ml",emoji:"&#127823;",pop:false,price:100},
   {id:18,name:"Johnnie Walker Red 750ml",cat:"Whisky",size:"750ml",emoji:"&#129347;",pop:true,price:289},
   {id:19,name:"Johnnie Walker Black 750ml",cat:"Whisky",size:"750ml",emoji:"&#129347;",pop:true,price:389},
@@ -1034,7 +1034,7 @@ function placeOrder() {
       body: JSON.stringify({
         amount: total,
         orderDetails: {
-          store: activeStore ? activeStore.name : 'KMG Lifestyle',
+          store: activeStore ? activeStore.name : 'Umgodi Store',
           items: itemsList,
           address: addr || 'Not specified',
           zone: selectedZone?.name || 'Zone 1',

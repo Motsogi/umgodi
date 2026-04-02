@@ -39,8 +39,7 @@ export default async function handler(req, res) {
     const { orderDetails, amount } = req.body;
     const orderNum   = 'UM' + Date.now().toString().slice(-6);
     const customerWA = orderDetails.customerWA || '';
-
-    // Save order to KV
+const customerPhone = orderDetails.customerPhone || '';    // Save order to KV
     const KV_URL   = process.env.KV_REST_API_URL;
     const KV_TOKEN = process.env.KV_REST_API_TOKEN;
     if (KV_URL && KV_TOKEN) {
@@ -55,7 +54,7 @@ export default async function handler(req, res) {
           address:    orderDetails.address,
           zone:       orderDetails.zone,
           customerWA,
-        }),
+          customerPhone,        }),
       });
     }
 
@@ -72,7 +71,7 @@ export default async function handler(req, res) {
         { type: 'text', text: orderDetails.address || '' },
         { type: 'text', text: String(amount) },
         { type: 'text', text: customerWA || 'Not provided' },
-        { type: 'text', text: approveUrl },
+        { type: 'text', text: `WA: ${customerWA} | 📞 ${customerPhone}` },
         { type: 'text', text: declineUrl },
       ],
     }];
